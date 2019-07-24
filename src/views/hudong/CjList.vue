@@ -1,0 +1,198 @@
+<template>
+  <a-card :bordered="false">
+    <!-- 查询区域 -->
+    <div class="table-page-search-wrapper">
+      <a-form layout="inline">
+        <a-row :gutter="24">
+          <a-col :md="6" :sm="8">
+            <a-form-item label="学科">
+              <a-input placeholder="学科" v-model="queryParam.xkName"></a-input>
+            </a-form-item>
+          </a-col>
+          <a-col :md="6" :sm="8">
+            <a-form-item label="孩子姓名">
+              <a-input placeholder="孩子姓名" v-model="queryParam.cjCdName"></a-input>
+            </a-form-item>
+          </a-col>
+          <a-col :md="6" :sm="8">
+            <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+              <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
+              <a-button
+                type="primary"
+                @click="searchReset"
+                icon="reload"
+                style="margin-left: 8px"
+              >重置</a-button>
+              <!-- <a @click="handleToggleSearch" style="margin-left: 8px">
+                {{ toggleSearchStatus ? '收起' : '展开' }}
+                <a-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
+              </a>-->
+            </span>
+          </a-col>
+        </a-row>
+      </a-form>
+    </div>
+
+    <!-- 操作按钮区域 -->
+    <div class="table-operator">
+      <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
+    </div>
+
+    <!-- table区域-begin -->
+    <div>
+      <!--  <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
+        <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
+        <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
+        <a style="margin-left: 24px" @click="onClearSelected">清空</a>
+      </div>-->
+
+      <a-table
+        ref="table"
+        size="middle"
+        bordered
+        rowKey="id"
+        :columns="columns"
+        :dataSource="dataSource"
+        :pagination="ipagination"
+        :loading="loading"
+        :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
+        @change="handleTableChange"
+      >
+        <span slot="action" slot-scope="text, record">
+          <a @click="handleEdit(record)">编辑</a>
+
+          <a-divider type="vertical"/>
+          <a-dropdown>
+            <a class="ant-dropdown-link">
+              更多
+              <a-icon type="down"/>
+            </a>
+            <a-menu slot="overlay">
+              <a-menu-item>
+                <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
+                  <a>删除</a>
+                </a-popconfirm>
+              </a-menu-item>
+            </a-menu>
+          </a-dropdown>
+        </span>
+      </a-table>
+    </div>
+    <!-- table区域-end -->
+
+    <!-- 表单区域 -->
+    <cj-modal ref="modalForm" @ok="modalFormOk"></cj-modal>
+  </a-card>
+</template>
+
+<script>
+import CjModal from './modules/CjModal'
+import { JeecgListMixin } from '@/mixins/JeecgListMixin'
+import { httpAction } from '@/api/manage'
+import { getAction } from '@/api/manage'
+
+const data = [
+  {
+    text: '打撒',
+    value: 1
+  }
+]
+
+export default {
+  name: 'CjList',
+  mixins: [JeecgListMixin],
+  components: {
+    CjModal
+  },
+  data() {
+    return {
+      description: '成绩管理管理页面',
+      data: [],
+      value: undefined,
+      // 表头
+      columns: [
+        {
+          title: '#',
+          dataIndex: '',
+          key: 'rowIndex',
+          width: 60,
+          align: 'center',
+          customRender: function(t, r, index) {
+            return parseInt(index) + 1
+          }
+        },
+        {
+          title: '学科',
+          align: 'center',
+          dataIndex: 'xkName'
+        },
+        {
+          title: '学科成绩',
+          align: 'center',
+          dataIndex: 'cjNumber'
+        },
+        {
+          title: '成绩时间',
+          align: 'center',
+          dataIndex: 'cjTime'
+        },
+        {
+          title: '孩子姓名',
+          align: 'center',
+          dataIndex: 'cjCdName'
+        },
+        {
+          title: '操作',
+          dataIndex: 'action',
+          align: 'center',
+          scopedSlots: { customRender: 'action' }
+        }
+      ],
+      url: {
+        list: '/cj/cj/list',
+        delete: '/cj/cj/delete',
+        deleteBatch: '/cj/cj/deleteBatch',
+        exportXlsUrl: 'cj/cj/exportXls',
+        importExcelUrl: 'cj/cj/importExcel'
+      }
+    }
+  },
+  computed: {
+    importExcelUrl: function() {
+      return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}`
+    }
+  },
+  methods: {}
+}
+</script>
+<style lang="less" scoped>
+/** Button按钮间距 */
+.ant-btn {
+  margin-left: 3px;
+}
+.ant-card-body .table-operator {
+  margin-bottom: 18px;
+}
+.ant-table-tbody .ant-table-row td {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+.anty-row-operator button {
+  margin: 0 5px;
+}
+.ant-btn-danger {
+  background-color: #ffffff;
+}
+
+.ant-modal-cust-warp {
+  height: 100%;
+}
+.ant-modal-cust-warp .ant-modal-body {
+  height: calc(100% - 110px) !important;
+  overflow-y: auto;
+}
+.ant-modal-cust-warp .ant-modal-content {
+  height: 90% !important;
+  overflow-y: hidden;
+}
+</style>
