@@ -2,11 +2,7 @@
   <a-row :gutter="10">
     <a-col :md="8" :sm="24">
       <a-card :bordered="false">
-        <a-tree
-          :treeData="treeData"
-          defaultExpandAll
-          @select="onSelect"
-        >
+        <a-tree :treeData="treeData" defaultExpandAll @select="onSelect">
           <template slot="custom"></template>
         </a-tree>
       </a-card>
@@ -62,7 +58,7 @@
               </a-form-item>
             </a-form>
           </a-modal>
-      
+
           <a-table
             ref="table"
             size="middle"
@@ -76,13 +72,23 @@
             @change="handleTableChange"
           >
             <span slot="action" slot-scope="text, record">
-              <a @click="relateMs(record)" v-if="record.msId == null">关联模版</a>
+              <!-- <a @click="relateMs(record)" v-if="record.msId == null">关联模版</a>
               <a-tooltip placement="topLeft" v-if="record.msId != null">
                 <template slot="title">
                   <span>{{record.msName}}</span>
                 </template>
                 <a @click="relateMs(record)">编辑模版</a>
-              </a-tooltip>
+              </a-tooltip>-->
+              <a-upload
+                name="file"
+                :showUploadList="false"
+                :multiple="false"
+                :action="importExcelUrl"
+                @change="handleImportExcel"
+                :data = "{childid: record.id}"
+              >
+                <a type="primary" icon="import">导入课表</a>
+              </a-upload>
               <a-divider type="vertical" />
               <a @click="handleEdit(record)">编辑</a>
 
@@ -159,21 +165,22 @@ export default {
           title: '孩子姓名',
           align: 'center',
           dataIndex: 'cdName'
-        },/* 
+        } /* 
         {
           title: '孩子生日',
           align: 'center',
           dataIndex: 'cdBirthday'
         },
-        {
-          title: '孩子性别',
-          align: 'center',
-          dataIndex: 'cdSex'
-        }, */
+         */,
         {
           title: '孩子手机号',
           align: 'center',
           dataIndex: 'cdPhone'
+        },
+        {
+          title: '年级',
+          align: 'center',
+          dataIndex: 'flName'
         },
         {
           title: '操作',
@@ -187,10 +194,10 @@ export default {
         delete: '/child/child/delete',
         deleteBatch: '/child/child/deleteBatch',
         exportXlsUrl: 'child/child/exportXls',
-        importExcelUrl: 'child/child/importExcel',
-        msListUrl: '/msm/msm/msListUrl', //下拉选择模版
+        msListUrl: '/msfenlei/msFenLi/msListUrl', //下拉选择模版
         updateChild: '/child/child/saveMsChild',
-        parentList: '/parent/parent/valueList'
+        parentList: '/parent/parent/valueList',
+        importExcelUrl: '/front/parent/vipCenter/exportKc'     //导入孩子的课程表
       }
     }
   },
@@ -215,7 +222,7 @@ export default {
             })
           })
           this.treeData[0].children = data
-          this.selectedKeys =  data[0].key
+          this.selectedKeys = data[0].key
           this.queryParam.ptId = data[0].key
           this.searchQuery()
         } else {
@@ -231,15 +238,14 @@ export default {
         this.searchQuery()
       }
     },
-    handleAdd: function () {
+    handleAdd: function() {
       let parentId = this.pid
-      if(parentId == ''){
-        this.$message.warning("请先选择父母")
-      }else {
-        this.$refs.modalForm.add(parentId);
-        this.$refs.modalForm.title = "新增";
+      if (parentId == '') {
+        this.$message.warning('请先选择父母')
+      } else {
+        this.$refs.modalForm.add(parentId)
+        this.$refs.modalForm.title = '新增'
       }
-      
     },
     add() {
       this.edit({})
@@ -270,15 +276,12 @@ export default {
     handleOk1: function() {
       let msids = this.msid //模式传过来的是带分类的,所以把它去掉
       console.log(msids)
-      if (msids.length == 1) {
-        this.$message.info('可能未选择具体模版,无法保存')
-        return
-      }
+
       //使用child的修改接口
       let httpUrl = this.url.updateChild
       let data = {
         id: this.cid,
-        msId: msids[1]
+        flId: msids[0]
       }
       let formData = Object.assign(data)
       let that = this

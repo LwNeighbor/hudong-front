@@ -1,14 +1,21 @@
 <template>
   <a-card :bordered="false">
     <!-- 查询区域 -->
-    <!-- <div class="table-page-search-wrapper">
+    <div class="table-page-search-wrapper">
       <a-form layout="inline">
         <a-row :gutter="24">
           <a-col :md="6" :sm="8">
-            <a-form-item label="消息标题">
-              <a-input placeholder="请输入消息标题" v-model="queryParam.title"></a-input>
+            <a-form-item label="孩子姓名">
+              <a-input placeholder="请输入孩子姓名" v-model="queryParam.name"></a-input>
             </a-form-item>
           </a-col>
+
+          <a-col :md="6" :sm="8">
+            <a-form-item label="孩子手机号">
+              <a-input placeholder="请输入孩子手机号" v-model="queryParam.phone"></a-input>
+            </a-form-item>
+          </a-col>
+
           <a-col :md="6" :sm="8">
             <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
               <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
@@ -22,19 +29,29 @@
           </a-col>
         </a-row>
       </a-form>
-    </div> -->
+    </div>
+
     <!-- 操作按钮区域 -->
     <div class="table-operator">
-      <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
+      <!-- <a-upload
+        name="file"
+        :showUploadList="false"
+        :multiple="false"
+        :action="importExcelUrl"
+        @change="handleImportExcel"
+      >
+        <a-button type="primary" icon="import">导入</a-button>
+      </a-upload> -->
+      <!-- <a-button type="primary" icon="download" @click="handleExportXls">下载课程模版</a-button> -->
       <a-dropdown v-if="selectedRowKeys.length > 0">
         <a-menu slot="overlay">
           <a-menu-item key="1" @click="batchDel">
-            <a-icon type="delete"/>删除
+            <a-icon type="delete" />删除
           </a-menu-item>
         </a-menu>
         <a-button style="margin-left: 8px">
           批量操作
-          <a-icon type="down"/>
+          <a-icon type="down" />
         </a-button>
       </a-dropdown>
     </div>
@@ -62,11 +79,11 @@
         <span slot="action" slot-scope="text, record">
           <a @click="handleEdit(record)">编辑</a>
 
-          <a-divider type="vertical"/>
+          <a-divider type="vertical" />
           <a-dropdown>
             <a class="ant-dropdown-link">
               更多
-              <a-icon type="down"/>
+              <a-icon type="down" />
             </a>
             <a-menu slot="overlay">
               <a-menu-item>
@@ -82,23 +99,23 @@
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
-    <xtxi-modal ref="modalForm" @ok="modalFormOk"></xtxi-modal>
+    <kc-modal ref="modalForm" @ok="modalFormOk"></kc-modal>
   </a-card>
 </template>
 
 <script>
-import XtxiModal from './modules/XtxiModal'
+import KcModal from './modules/KcModal'
 import { JeecgListMixin } from '@/mixins/JeecgListMixin'
 
 export default {
-  name: 'XtxiList',
+  name: 'KcList',
   mixins: [JeecgListMixin],
   components: {
-    XtxiModal,
+    KcModal
   },
   data() {
     return {
-      description: '系统消息管理管理页面',
+      description: '课程表管理管理页面',
       // 表头
       columns: [
         {
@@ -112,19 +129,40 @@ export default {
           }
         },
         {
-          title: '系统推送时间',
+          title: '孩子姓名',
           align: 'center',
-          dataIndex: 'psTime'
+          dataIndex: 'name'
         },
         {
-          title: '消息标题',
+          title: '孩子手机号',
           align: 'center',
-          dataIndex: 'title'
+          dataIndex: 'phone'
         },
         {
-          title: '消息简介',
+          title: '科目名称',
           align: 'center',
-          dataIndex: 'introduce'
+          dataIndex: 'kmName'
+        },
+        {
+          title: '年级',
+          align: 'center',
+          dataIndex: 'flName'
+        },
+        {
+          title: '上课时间',
+          align: 'center',
+          dataIndex: 'startTime'
+        },
+        {
+          title: '下课时间',
+          align: 'center',
+          dataIndex: 'endTime'
+        },
+        {
+          title: '星期',
+          align: 'center',
+          dataIndex: 'weekday',
+          sortOrder: 'ascend'
         },
         {
           title: '操作',
@@ -134,21 +172,23 @@ export default {
         }
       ],
       url: {
-        list: '/xtxi/xtxi/list',
-        delete: '/xtxi/xtxi/delete',
-        deleteBatch: '/xtxi/xtxi/deleteBatch',
-        exportXlsUrl: 'xtxi/xtxi/exportXls',
-        importExcelUrl: 'xtxi/xtxi/importExcel'
+        list: '/kc/kc/list',
+        delete: '/kc/kc/delete',
+        deleteBatch: '/kc/kc/deleteBatch',
+        exportXlsUrl: '/kcExcel.xls',
+        importExcelUrl: '/front/parent/vipCenter/exportKc'
       }
     }
   },
   computed: {
     importExcelUrl: function() {
       return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}`
-    }
+    },
+   /*  handleExportXls: function() {
+      return `${window._CONFIG['domianURL']}/${this.url.exportXlsUrl}`
+    } */
   },
-  methods: {
-  }
+  methods: {}
 }
 </script>
 <style lang="less" scoped>

@@ -13,8 +13,19 @@
         <a-form-item label="年级" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-cascader :options="options" @change="onChange" />
         </a-form-item>
-        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="学科名称">
-          <a-input placeholder="请输入学科名称" v-decorator="['xkName', validatorRules.xkName ]" />
+
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="模版路径">
+          <a-upload
+            name="file"
+            :multiple="true"
+            :action="uploadAction"
+            :headers="headers"
+            @change="handleChange"
+          >
+            <a-button>
+              <a-icon type="upload" />Click to Upload
+            </a-button>
+          </a-upload>
         </a-form-item>
       </a-form>
     </a-spin>
@@ -25,17 +36,21 @@
 import { httpAction } from '@/api/manage'
 import pick from 'lodash.pick'
 import moment from 'moment'
+import Vue from 'vue'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
 
 export default {
-  name: 'XueKeModal',
+  name: 'HdExcelModal',
   data() {
     return {
       title: '操作',
       visible: false,
       model: {},
-      options:[],
-      flId:'',
-      flName:'',
+      headers: {},
+      options: [],
+      path: '',
+      flId: '',
+      flName: '',
       labelCol: {
         xs: { span: 24 },
         sm: { span: 5 }
@@ -48,17 +63,26 @@ export default {
       confirmLoading: false,
       form: this.$form.createForm(this),
       validatorRules: {
-        xkId: { rules: [{ required: true, message: '请输入学科ID!' }] },
-        xkName: { rules: [{ required: true, message: '请输入学科名称!' }] }
+        excelName: { rules: [{ required: true, message: '请输入模版名称!' }] },
+        excelAddress: { rules: [{ required: true, message: '请输入模版路径!' }] }
       },
       url: {
-        add: '/xk/xueKe/add',
-        edit: '/xk/xueKe/edit',
-        fllist: '/msfenlei/msFenLi/valueList'
+        fllist: '/msfenlei/msFenLi/valueList',
+        add: '/hdExcel/hdExcel/add',
+        edit: '/hdExcel/hdExcel/edit',
+        fileUpload: window._CONFIG['domianURL'] + '/hdExcel/hdExcel/uploadExcel'
       }
     }
   },
-  created() {},
+  created() {
+    const token = Vue.ls.get(ACCESS_TOKEN)
+    this.headers = { 'X-Access-Token': token }
+  },
+  computed: {
+    uploadAction: function() {
+      return this.url.fileUpload
+    }
+  },
   mounted() {
     let httpUrl = this.url.fllist
     httpAction(httpUrl, '', 'get').then(res => {
@@ -84,7 +108,7 @@ export default {
       this.model = Object.assign({}, record)
       this.visible = true
       this.$nextTick(() => {
-        this.form.setFieldsValue(pick(this.model, 'xkId', 'xkName'))
+        this.form.setFieldsValue(pick(this.model, 'excelName'))
         //时间格式化
       })
     },
@@ -107,17 +131,19 @@ export default {
             httpurl += this.url.edit
             method = 'put'
           }
+
+          this.model.excelAddress = this.path
           this.model.flId = this.flId
           this.model.flName = this.flName
+
           let formData = Object.assign(this.model, values)
           //时间格式化
-
-          console.log(formData)
           httpAction(httpurl, formData, method)
             .then(res => {
               if (res.success) {
                 that.$message.success(res.message)
                 that.$emit('ok')
+                this.loadData();
               } else {
                 that.$message.warning(res.message)
               }
@@ -131,6 +157,16 @@ export default {
     },
     handleCancel() {
       this.close()
+    },
+    handleChange(info) {
+      if (info.file.status !== 'uploading') {
+      }
+      if (info.file.status === 'done') {
+        this.path = info.file.response.result.path
+        this.$message.success(`${info.file.name} file uploaded successfully`)
+      } else if (info.file.status === 'error') {
+        this.$message.error(`${info.file.name} file upload failed.`)
+      }
     },
     onChange(value,selectedOptions) {
       this.flId = selectedOptions[0].value

@@ -23,18 +23,19 @@
         </a-row>
       </a-form>
     </div> -->
+
     <!-- 操作按钮区域 -->
     <div class="table-operator">
       <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
       <a-dropdown v-if="selectedRowKeys.length > 0">
         <a-menu slot="overlay">
           <a-menu-item key="1" @click="batchDel">
-            <a-icon type="delete"/>删除
+            <a-icon type="delete" />删除
           </a-menu-item>
         </a-menu>
         <a-button style="margin-left: 8px">
           批量操作
-          <a-icon type="down"/>
+          <a-icon type="down" />
         </a-button>
       </a-dropdown>
     </div>
@@ -62,11 +63,11 @@
         <span slot="action" slot-scope="text, record">
           <a @click="handleEdit(record)">编辑</a>
 
-          <a-divider type="vertical"/>
+          <a-divider type="vertical" />
           <a-dropdown>
             <a class="ant-dropdown-link">
               更多
-              <a-icon type="down"/>
+              <a-icon type="down" />
             </a>
             <a-menu slot="overlay">
               <a-menu-item>
@@ -82,23 +83,23 @@
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
-    <xtxi-modal ref="modalForm" @ok="modalFormOk"></xtxi-modal>
+    <xthf-modal ref="modalForm" @ok="modalFormOk"></xthf-modal>
   </a-card>
 </template>
 
 <script>
-import XtxiModal from './modules/XtxiModal'
+import XthfModal from './modules/XthfModal'
 import { JeecgListMixin } from '@/mixins/JeecgListMixin'
 
 export default {
-  name: 'XtxiList',
+  name: 'XthfList',
   mixins: [JeecgListMixin],
   components: {
-    XtxiModal,
+    XthfModal
   },
   data() {
     return {
-      description: '系统消息管理管理页面',
+      description: '学生OK回复的系统回复管理页面',
       // 表头
       columns: [
         {
@@ -112,17 +113,22 @@ export default {
           }
         },
         {
-          title: '系统推送时间',
+          title: '注册后天数',
           align: 'center',
           dataIndex: 'psTime'
         },
         {
-          title: '消息标题',
+          title: '年级',
           align: 'center',
-          dataIndex: 'title'
+          dataIndex: 'gradeName'
         },
         {
-          title: '消息简介',
+          title: '科目',
+          align: 'center',
+          dataIndex: 'kemu'
+        },
+        {
+          title: '消息内容',
           align: 'center',
           dataIndex: 'introduce'
         },
@@ -134,11 +140,9 @@ export default {
         }
       ],
       url: {
-        list: '/xtxi/xtxi/list',
-        delete: '/xtxi/xtxi/delete',
-        deleteBatch: '/xtxi/xtxi/deleteBatch',
-        exportXlsUrl: 'xtxi/xtxi/exportXls',
-        importExcelUrl: 'xtxi/xtxi/importExcel'
+        list: '/xthf/xthf/list',
+        delete: '/xthf/xthf/delete',
+        deleteBatch: '/xthf/xthf/deleteBatch',
       }
     }
   },

@@ -23,18 +23,19 @@
         </a-row>
       </a-form>
     </div> -->
+
     <!-- 操作按钮区域 -->
     <div class="table-operator">
       <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
       <a-dropdown v-if="selectedRowKeys.length > 0">
         <a-menu slot="overlay">
           <a-menu-item key="1" @click="batchDel">
-            <a-icon type="delete"/>删除
+            <a-icon type="delete" />删除
           </a-menu-item>
         </a-menu>
         <a-button style="margin-left: 8px">
           批量操作
-          <a-icon type="down"/>
+          <a-icon type="down" />
         </a-button>
       </a-dropdown>
     </div>
@@ -62,11 +63,11 @@
         <span slot="action" slot-scope="text, record">
           <a @click="handleEdit(record)">编辑</a>
 
-          <a-divider type="vertical"/>
+          <a-divider type="vertical" />
           <a-dropdown>
             <a class="ant-dropdown-link">
               更多
-              <a-icon type="down"/>
+              <a-icon type="down" />
             </a>
             <a-menu slot="overlay">
               <a-menu-item>
@@ -82,23 +83,23 @@
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
-    <xtxi-modal ref="modalForm" @ok="modalFormOk"></xtxi-modal>
+    <xtzc-modal ref="modalForm" @ok="modalFormOk"></xtzc-modal>
   </a-card>
 </template>
 
 <script>
-import XtxiModal from './modules/XtxiModal'
+import XtzcModal from './modules/XtzcModal'
 import { JeecgListMixin } from '@/mixins/JeecgListMixin'
 
 export default {
-  name: 'XtxiList',
+  name: 'XtzcList',
   mixins: [JeecgListMixin],
   components: {
-    XtxiModal,
+    XtzcModal
   },
   data() {
     return {
-      description: '系统消息管理管理页面',
+      description: '注册后第几天的固定内容发送管理页面',
       // 表头
       columns: [
         {
@@ -112,7 +113,7 @@ export default {
           }
         },
         {
-          title: '系统推送时间',
+          title: '注册后的天数',
           align: 'center',
           dataIndex: 'psTime'
         },
@@ -127,6 +128,11 @@ export default {
           dataIndex: 'introduce'
         },
         {
+          title: '发送时间',
+          align: 'center',
+          dataIndex: 'sendTime'
+        },
+        {
           title: '操作',
           dataIndex: 'action',
           align: 'center',
@@ -134,11 +140,11 @@ export default {
         }
       ],
       url: {
-        list: '/xtxi/xtxi/list',
-        delete: '/xtxi/xtxi/delete',
-        deleteBatch: '/xtxi/xtxi/deleteBatch',
-        exportXlsUrl: 'xtxi/xtxi/exportXls',
-        importExcelUrl: 'xtxi/xtxi/importExcel'
+        list: '/xtzc/xtzc/list',
+        delete: '/xtzc/xtzc/delete',
+        deleteBatch: '/xtzc/xtzc/deleteBatch',
+        exportXlsUrl: 'xtzc/xtzc/exportXls',
+        importExcelUrl: 'xtzc/xtzc/importExcel'
       }
     }
   },
@@ -147,8 +153,7 @@ export default {
       return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}`
     }
   },
-  methods: {
-  }
+  methods: {}
 }
 </script>
 <style lang="less" scoped>

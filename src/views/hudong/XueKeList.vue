@@ -22,7 +22,7 @@
               <!-- <a @click="handleToggleSearch" style="margin-left: 8px">
                 {{ toggleSearchStatus ? '收起' : '展开' }}
                 <a-icon :type="toggleSearchStatus ? 'up' : 'down'"/>
-              </a> -->
+              </a>-->
             </span>
           </a-col>
         </a-row>
@@ -52,7 +52,7 @@
           批量操作
           <a-icon type="down"/>
         </a-button>
-      </a-dropdown> -->
+      </a-dropdown>-->
     </div>
 
     <!-- table区域-begin -->
@@ -78,11 +78,11 @@
         <span slot="action" slot-scope="text, record">
           <a @click="handleEdit(record)">编辑</a>
 
-          <a-divider type="vertical"/>
+          <a-divider type="vertical" />
           <a-dropdown>
             <a class="ant-dropdown-link">
               更多
-              <a-icon type="down"/>
+              <a-icon type="down" />
             </a>
             <a-menu slot="overlay">
               <a-menu-item>
@@ -126,6 +126,11 @@ export default {
           customRender: function(t, r, index) {
             return parseInt(index) + 1
           }
+        },
+        {
+          title: '年级',
+          align: 'center',
+          dataIndex: 'flName'
         },
         {
           title: '学科名称',

@@ -9,22 +9,14 @@
     </a-col>
     <a-modal title="添加详情" v-model="msvisible" @ok="handleOk(1)">
       <a-form>
-        <a-form-item label="提醒时间" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <!-- <a-input format="HH:mm" v-model="mqTime" /> -->
-          <a-input style=" width: 100px; text-align: center" placeholder="小时(两位数)" v-model="start" />
-          <a-input
-            style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff"
-            placeholder=":"
-            disabled
-          />
-          <a-input
-            style="width: 100px; text-align: center; border-left: 0"
-            placeholder="分钟(两位数)"
-            v-model="end"
-          />
+        <a-form-item label="注册天数" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-input placeholder="注册天数" v-model="registerDay" />
         </a-form-item>
-        <a-form-item label="项目" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <a-input placeholder="项目" v-model="mqKemu" />
+        <a-form-item label="提前分钟数" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-input placeholder="提前分钟数" v-model="mqTime" />
+        </a-form-item>
+        <a-form-item label="科目" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-cascader :options="options" @change="onChange" />
         </a-form-item>
         <a-form-item label="提醒内容" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-textarea placeholder="请输入提醒内容" :rows="4" v-model="mqContent" />
@@ -41,28 +33,20 @@
     </a-modal>
     <a-modal title="修改详情" v-model="msvisible1" @ok="handleOk(2)">
       <a-form>
-        <a-form-item label="提醒时间" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <!-- <a-input format="HH:mm" v-model="mqTime" /> -->
-          <a-input style=" width: 100px; text-align: center" placeholder="小时(两位数)" v-model="start" />
-          <a-input
-            style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff"
-            placeholder=":"
-            disabled
-          />
-          <a-input
-            style="width: 100px; text-align: center; border-left: 0"
-            placeholder="分钟(两位数)"
-            v-model="end"
-          />
+        <a-form-item label="注册天数" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-input placeholder="注册天数" v-model="registerDay" />
         </a-form-item>
-        <a-form-item label="项目" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <a-input placeholder="项目" v-model="mqKemu" />
+        <a-form-item label="提前分钟数" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-input placeholder="提前分钟数" v-model="mqTime" />
+        </a-form-item>
+        <a-form-item label="科目" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <a-cascader :options="options" @change="onChange" />
         </a-form-item>
         <a-form-item label="提醒内容" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-textarea placeholder="请输入提醒内容" :rows="4" v-model="mqContent" />
         </a-form-item>
         <a-form-item label="提醒类型" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-          <a-select placeholder="请选择提醒类型" @change="handleChange"  :defaultValue="txTypeText">
+          <a-select placeholder="请选择提醒类型" @change="handleChange" :defaultValue="txTypeText">
             <a-select-option :value="0">静音</a-select-option>
             <a-select-option :value="1">响铃</a-select-option>
             <a-select-option :value="2">震动</a-select-option>
@@ -74,344 +58,63 @@
     <!--  -->
     <a-col :md="20" :sm="24">
       <a-card :bordered="false">
-        <a-tabs defaultActiveKey="2" @change="callback">
-          <a-tab-pane tab="周一" key="2" forceRender>
-            <!-- 操作按钮区域 -->
-            <div class="table-operator">
-              <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
-              <a-button
-                @click="batchDel"
-                style="margin-left:8px"
-                v-if="selectedRowKeys.length > 0"
-                ghost
-                type="primary"
-                icon="delete"
-              >批量删除</a-button>
-            </div>
+        <!-- 操作按钮区域 -->
+        <div class="table-operator">
+          <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
+          <!-- <a-button type="primary" icon="download" @click="handleExportXls">导出模版</a-button> -->
+          <a-upload
+            name="file"
+            :showUploadList="false"
+            :multiple="false"
+            :action="importExcelUrl"
+            @change="handleImportExcel"
+            :beforeUpload="beforeUpload"
+          >
+            <a-button type="primary" icon="import">导入</a-button>
+          </a-upload>
+          <a-button
+            @click="batchDel"
+            style="margin-left:8px"
+            v-if="selectedRowKeys.length > 0"
+            ghost
+            type="primary"
+            icon="delete"
+          >批量删除</a-button>
+        </div>
 
-            <!-- table区域-begin -->
-            <div>
-              <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
-                <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
-                <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
-                <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-              </div>
+        <!-- table区域-begin -->
+        <div>
+          <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
+            <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
+            <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
+            <a style="margin-left: 24px" @click="onClearSelected">清空</a>
+          </div>
 
-              <a-table
-                ref="table"
-                size="middle"
-                bordered
-                rowKey="id"
-                :columns="columns"
-                :dataSource="dataSource"
-                :pagination="ipagination"
-                :loading="loading"
-                :rowSelection="{onChange: onSelectChange}"
-                @change="handleTableChange"
-              >
-                <span slot="action" slot-scope="text, record">
-                  <a @click="msedit(record)">编辑</a>
-                  <a-divider type="vertical" />
-                  <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                    <a>删除</a>
-                  </a-popconfirm>
-                </span>
-              </a-table>
-            </div>
-            <!-- table区域-end -->
+          <a-table
+            ref="table"
+            size="middle"
+            bordered
+            rowKey="id"
+            :columns="columns"
+            :dataSource="dataSource"
+            :pagination="ipagination"
+            :loading="loading"
+            :rowSelection="{onChange: onSelectChange}"
+            @change="handleTableChange"
+          >
+            <span slot="action" slot-scope="text, record">
+              <a @click="msedit(record)">编辑</a>
+              <a-divider type="vertical" />
+              <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
+                <a>删除</a>
+              </a-popconfirm>
+            </span>
+          </a-table>
+        </div>
+        <!-- table区域-end -->
 
-            <!-- 表单区域 -->
-            <mqXQing-modal ref="modalForm" @ok="modalFormOk"></mqXQing-modal>
-          </a-tab-pane>
-          <a-tab-pane tab="周二" key="3" forceRender>
-            <!-- 操作按钮区域 -->
-            <div class="table-operator">
-              <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
-              <a-button
-                @click="batchDel"
-                style="margin-left:8px"
-                v-if="selectedRowKeys.length > 0"
-                ghost
-                type="primary"
-                icon="delete"
-              >批量删除</a-button>
-            </div>
-
-            <!-- table区域-begin -->
-            <div>
-              <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
-                <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
-                <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
-                <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-              </div>
-
-              <a-table
-                ref="table"
-                size="middle"
-                bordered
-                rowKey="id"
-                :columns="columns"
-                :dataSource="dataSource"
-                :pagination="ipagination"
-                :loading="loading"
-                :rowSelection="{onChange: onSelectChange}"
-                @change="handleTableChange"
-              >
-                <span slot="action" slot-scope="text, record">
-                  <a @click="msedit(record)">编辑</a>
-                  <a-divider type="vertical" />
-                  <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                    <a>删除</a>
-                  </a-popconfirm>
-                </span>
-              </a-table>
-            </div>
-            <!-- table区域-end -->
-
-            <!-- 表单区域 -->
-            <mqXQing-modal ref="modalForm" @ok="modalFormOk"></mqXQing-modal>
-          </a-tab-pane>
-          <a-tab-pane tab="周三" key="4" forceRender>
-            <!-- 操作按钮区域 -->
-            <div class="table-operator">
-              <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
-              <a-button
-                @click="batchDel"
-                style="margin-left:8px"
-                v-if="selectedRowKeys.length > 0"
-                ghost
-                type="primary"
-                icon="delete"
-              >批量删除</a-button>
-            </div>
-
-            <!-- table区域-begin -->
-            <div>
-              <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
-                <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
-                <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
-                <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-              </div>
-
-              <a-table
-                ref="table"
-                size="middle"
-                bordered
-                rowKey="id"
-                :columns="columns"
-                :dataSource="dataSource"
-                :pagination="ipagination"
-                :loading="loading"
-                :rowSelection="{onChange: onSelectChange}"
-                @change="handleTableChange"
-              >
-                <span slot="action" slot-scope="text, record">
-                  <a @click="msedit(record)">编辑</a>
-                  <a-divider type="vertical" />
-                  <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                    <a>删除</a>
-                  </a-popconfirm>
-                </span>
-              </a-table>
-            </div>
-            <!-- table区域-end -->
-
-            <!-- 表单区域 -->
-            <mqXQing-modal ref="modalForm" @ok="modalFormOk"></mqXQing-modal>
-          </a-tab-pane>
-          <a-tab-pane tab="周四" key="5" forceRender>
-            <!-- 操作按钮区域 -->
-            <div class="table-operator">
-              <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
-              <a-button
-                @click="batchDel"
-                style="margin-left:8px"
-                v-if="selectedRowKeys.length > 0"
-                ghost
-                type="primary"
-                icon="delete"
-              >批量删除</a-button>
-            </div>
-
-            <!-- table区域-begin -->
-            <div>
-              <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
-                <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
-                <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
-                <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-              </div>
-
-              <a-table
-                ref="table"
-                size="middle"
-                bordered
-                rowKey="id"
-                :columns="columns"
-                :dataSource="dataSource"
-                :pagination="ipagination"
-                :loading="loading"
-                :rowSelection="{onChange: onSelectChange}"
-                @change="handleTableChange"
-              >
-                <span slot="action" slot-scope="text, record">
-                  <a @click="msedit(record)">编辑</a>
-                  <a-divider type="vertical" />
-                  <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                    <a>删除</a>
-                  </a-popconfirm>
-                </span>
-              </a-table>
-            </div>
-            <!-- table区域-end -->
-
-            <!-- 表单区域 -->
-            <mqXQing-modal ref="modalForm" @ok="modalFormOk"></mqXQing-modal>
-          </a-tab-pane>
-          <a-tab-pane tab="周五" key="6" forceRender>
-            <!-- 操作按钮区域 -->
-            <div class="table-operator">
-              <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
-              <a-button
-                @click="batchDel"
-                style="margin-left:8px"
-                v-if="selectedRowKeys.length > 0"
-                ghost
-                type="primary"
-                icon="delete"
-              >批量删除</a-button>
-            </div>
-
-            <!-- table区域-begin -->
-            <div>
-              <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
-                <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
-                <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
-                <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-              </div>
-
-              <a-table
-                ref="table"
-                size="middle"
-                bordered
-                rowKey="id"
-                :columns="columns"
-                :dataSource="dataSource"
-                :pagination="ipagination"
-                :loading="loading"
-                :rowSelection="{onChange: onSelectChange}"
-                @change="handleTableChange"
-              >
-                <span slot="action" slot-scope="text, record">
-                  <a @click="msedit(record)">编辑</a>
-                  <a-divider type="vertical" />
-                  <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                    <a>删除</a>
-                  </a-popconfirm>
-                </span>
-              </a-table>
-            </div>
-            <!-- table区域-end -->
-
-            <!-- 表单区域 -->
-            <mqXQing-modal ref="modalForm" @ok="modalFormOk"></mqXQing-modal>
-          </a-tab-pane>
-          <a-tab-pane tab="周六" key="7" forceRender>
-            <!-- 操作按钮区域 -->
-            <div class="table-operator">
-              <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
-              <a-button
-                @click="batchDel"
-                style="margin-left:8px"
-                v-if="selectedRowKeys.length > 0"
-                ghost
-                type="primary"
-                icon="delete"
-              >批量删除</a-button>
-            </div>
-
-            <!-- table区域-begin -->
-            <div>
-              <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
-                <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
-                <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
-                <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-              </div>
-
-              <a-table
-                ref="table"
-                size="middle"
-                bordered
-                rowKey="id"
-                :columns="columns"
-                :dataSource="dataSource"
-                :pagination="ipagination"
-                :loading="loading"
-                :rowSelection="{onChange: onSelectChange}"
-                @change="handleTableChange"
-              >
-                <span slot="action" slot-scope="text, record">
-                  <a @click="msedit(record)">编辑</a>
-                  <a-divider type="vertical" />
-                  <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                    <a>删除</a>
-                  </a-popconfirm>
-                </span>
-              </a-table>
-            </div>
-            <!-- table区域-end -->
-
-            <!-- 表单区域 -->
-            <mqXQing-modal ref="modalForm" @ok="modalFormOk"></mqXQing-modal>
-          </a-tab-pane>
-          <a-tab-pane tab="周日" key="1" forceRender>
-            <!-- 操作按钮区域 -->
-            <div class="table-operator">
-              <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
-              <a-button
-                @click="batchDel"
-                style="margin-left:8px"
-                v-if="selectedRowKeys.length > 0"
-                ghost
-                type="primary"
-                icon="delete"
-              >批量删除</a-button>
-            </div>
-
-            <!-- table区域-begin -->
-            <div>
-              <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
-                <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择
-                <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
-                <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-              </div>
-
-              <a-table
-                ref="table"
-                size="middle"
-                bordered
-                rowKey="id"
-                :columns="columns"
-                :dataSource="dataSource"
-                :pagination="ipagination"
-                :loading="loading"
-                :rowSelection="{onChange: onSelectChange}"
-                @change="handleTableChange"
-              >
-                <span slot="action" slot-scope="text, record">
-                  <a @click="msedit(record)">编辑</a>
-                  <a-divider type="vertical" />
-                  <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                    <a>删除</a>
-                  </a-popconfirm>
-                </span>
-              </a-table>
-            </div>
-            <!-- table区域-end -->
-
-            <!-- 表单区域 -->
-            <mqXQing-modal ref="modalForm" @ok="modalFormOk"></mqXQing-modal>
-          </a-tab-pane>
-        </a-tabs>
+        <!-- 表单区域 -->
+        <mqXQing-modal ref="modalForm" @ok="modalFormOk"></mqXQing-modal>
       </a-card>
     </a-col>
   </a-row>
@@ -427,11 +130,10 @@ import moment from 'moment'
 
 const treeData = [
   {
-    title: '模式',
+    title: '年级',
     key: '0',
     selectable: false,
-    disabled: true,
-    children: []
+    disabled: true
   }
 ]
 export default {
@@ -456,12 +158,17 @@ export default {
           }
         },
         {
-          title: '详情时间',
+          title: '注册天数',
+          align: 'center',
+          dataIndex: 'registerDay'
+        },
+        {
+          title: '提前分钟数',
           align: 'center',
           dataIndex: 'mqTime'
         },
         {
-          title: '项目',
+          title: '科目',
           align: 'center',
           dataIndex: 'mqKemu'
         },
@@ -477,17 +184,15 @@ export default {
           scopedSlots: { customRender: 'action' }
         }
       ],
-      week: '2', //默认是周一
-      start: '',
-      end: '',
       id: ' ',
       mqTime: '',
       mqKemu: '',
       mqContent: '',
-      msValue: '',
-      msId: '',
+      flId: '',
       txType: '',
+      registerDay: '',
       txTypeText: '',
+      options: [],
       treeData,
       selectedKeys: '',
       msvisible: false,
@@ -501,7 +206,8 @@ export default {
         addMq: '/mqx/mqXQing/add',
         editMq: '/mqx/mqXQing/edit',
         deleteMq: '/mqx/mqXQing/delete',
-        msList: '/msm/msm/valueList'
+        fenliList: '/msfenlei/msFenLi/valueList',
+        xuekeList: '/xk/xueKe/valueList'
       }
     }
   },
@@ -509,9 +215,6 @@ export default {
     this.handSearch()
   },
   computed: {
-    importExcelUrl: function() {
-      return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}`
-    },
     currentId() {
       return this.id
     }
@@ -527,7 +230,6 @@ export default {
         this.ipagination.current = 1
       }
       var params = this.getQueryParams() //查询条件
-      params.week = this.week
       getAction(this.url.list, params).then(res => {
         if (res.success) {
           this.dataSource = res.result.records
@@ -536,9 +238,7 @@ export default {
       })
     },
     callback(key) {
-      this.week = key
       var params = this.getQueryParams() //查询条件
-      params.week = key
       getAction(this.url.list, params).then(res => {
         if (res.success) {
           this.dataSource = res.result.records
@@ -546,32 +246,36 @@ export default {
         }
       })
     },
+    selectKemu() {
+      let httpUrl = this.url.xuekeList
+      httpAction(httpUrl, { flId: this.flId }, 'post').then(res => {
+        if (res.success) {
+          var list = res.result
+          const data = []
+          list.forEach(r => {
+            data.push({
+              value: r.value,
+              label: r.text
+            })
+          })
+          this.options = data
+        }
+      })
+    },
     handSearch() {
-      this.$http.get(this.url.msList).then(res => {
+      this.$http.get(this.url.fenliList).then(res => {
         if (res.success) {
           const result = res.result
           const data = []
-
           result.forEach(r => {
-            const data1 = []
-            var innerData = r.children
-            innerData.forEach(i => {
-              data1.push({
-                key: i.value,
-                title: i.text
-              })
-            })
             data.push({
               key: r.value,
-              title: r.text,
-              disabled: true,
-              children: data1
+              title: r.text
             })
           })
           this.treeData[0].children = data
-          //this.selectedKeys = data[0].key
-          this.queryParam.msId = data[0].key
-          this.queryParam.week = this.week
+          /*  this.selectedKeys = data[0].key */
+          this.queryParam.flId = data[0].key
           this.searchQuery()
         } else {
           this.$message.warning(res.message)
@@ -582,42 +286,44 @@ export default {
       if (selectedKeys.length > 0) {
         if (this.selectedKeys[0] !== selectedKeys[0]) {
           this.selectedKeys = selectedKeys[0]
-          this.queryParam.msId = selectedKeys[0]
-          this.queryParam.week = this.week
+          this.queryParam.flId = selectedKeys[0]
+          this.flId = selectedKeys[0]
           this.searchQuery()
         }
       }
     },
     msadd() {
+      this.selectKemu()
       let key = this.selectedKeys
       if (key.length > 0) {
         //编辑字典数据
         this.msvisible = true
       } else {
-        this.$message.info('请先选择模式')
+        this.$message.info('请先选择年级')
       }
     },
     msedit(record) {
+      this.selectedKeys = record.flId
+      this.flId = record.flId
+      this.selectKemu()
       this.transTxType(record.txType)
       this.id = record.id
       let key = this.selectedKeys
       this.txType = record.txType
+      this.registerDay = record.registerDay
       //编辑字典数据
       this.msvisible1 = true
       this.mqTime = record.mqTime
-      this.start = record.mqTime.split(':')[0]
-      this.end = record.mqTime.split(':')[1]
       this.mqKemu = record.mqKemu
       this.mqContent = record.mqContent
     },
     handleOk(num) {
-      let start = this.start
-      let end = this.end
-      let mqTime = start + ':' + end
+      let mqTime = this.mqTime
       let mqKemu = this.mqKemu
       let mqContent = this.mqContent
       let id = this.id
       let txType = this.txType
+      let registerDay = this.registerDay
       const that = this
 
       that.confirmLoading = true
@@ -628,23 +334,23 @@ export default {
         httpurl = this.url.addMq //添加详情
         method = 'post'
         data = {
-          msId: this.selectedKeys,
+          flId: this.selectedKeys,
           mqTime: mqTime,
           mqKemu: mqKemu,
           mqContent: mqContent,
-          week: this.week,
+          registerDay: registerDay,
           txType: this.txType
         }
       } else if (num == '2') {
         httpurl = this.url.editMq //修改详情
         method = 'put'
         data = {
-          msId: this.selectedKeys,
+          flId: this.selectedKeys,
           mqTime: mqTime,
           mqKemu: mqKemu,
           mqContent: mqContent,
+          registerDay: registerDay,
           id: id,
-          week: this.week,
           txType: this.txType
         }
       }
@@ -662,32 +368,69 @@ export default {
           }
         })
         .finally(() => {
-          this.start = ''
-          this.end = ''
           this.mqTime = ''
           this.mqKemu = ''
           this.mqContent = ''
+          this.registerDay = ''
           that.confirmLoading = false
           this.msvisible = false
           this.msvisible1 = false
-          this.queryParam.msId = this.selectedKeys
-          this.queryParam.week = this.week
+          this.queryParam.flId = this.selectedKeys
           this.searchQuery()
         })
     },
     handleChange(value) {
       this.txType = value
     },
-    transTxType(value){
-      if(value == '0'){
-        this.txTypeText = "默认"
-      }else if(value == '1'){
+    transTxType(value) {
+      if (value == '0') {
+        this.txTypeText = '默认'
+      } else if (value == '1') {
         this.txTypeText = '响铃'
-      }else if(value == '2'){
+      } else if (value == '2') {
         this.txTypeText = '震动'
-      }else if(value == '3'){
+      } else if (value == '3') {
         this.txTypeText = '响铃并震动'
       }
+    },
+    onChange(value) {
+      this.mqKemu = value[0]
+    },
+    /* 导出 */
+    handleExportXls() {
+      let quparam = this.getQueryParams()
+      delete quparam.flId
+
+      let paramsStr = encodeURI(JSON.stringify(quparam))
+      let url = `${window._CONFIG['domianURL']}/${this.url.exportXlsUrl}?paramsStr=${paramsStr}`
+      window.location.href = url
+    },
+    /* 导入 */
+    handleImportExcel(info) {
+      if (info.file.status !== 'uploading') {
+        console.log(info.file, info.fileList)
+      }
+      if (info.file.status === 'done') {
+        this.$message.success(`${info.file.name} 文件上传成功`)
+        this.loadData()
+      } else if (info.file.status === 'error') {
+        this.$message.error(`${info.file.name} 文件上传失败.`)
+      }
+    },
+    beforeUpload(file) {
+      console.log(11111)
+      let key = this.selectedKeys
+      if (key.length > 0) {
+        //编辑字典数据
+        //this.msvisible = true
+        return true
+      } else {
+        this.$message.info('请先选择年级')
+        return false
+      }
+    },
+    importExcelUrl: function() {
+      return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}/${this.selectedKeys}`
     }
   }
 }

@@ -1,12 +1,12 @@
 <template>
   <a-card :bordered="false">
     <!-- 查询区域 -->
-    <!-- <div class="table-page-search-wrapper">
+    <div class="table-page-search-wrapper">
       <a-form layout="inline">
         <a-row :gutter="24">
           <a-col :md="6" :sm="8">
-            <a-form-item label="消息标题">
-              <a-input placeholder="请输入消息标题" v-model="queryParam.title"></a-input>
+            <a-form-item label="年级">
+              <a-input placeholder="请输入年级" v-model="queryParam.excelName"></a-input>
             </a-form-item>
           </a-col>
           <a-col :md="6" :sm="8">
@@ -18,23 +18,38 @@
                 icon="reload"
                 style="margin-left: 8px"
               >重置</a-button>
+              <a @click="handleToggleSearch" style="margin-left: 8px">
+                {{ toggleSearchStatus ? '收起' : '展开' }}
+                <a-icon :type="toggleSearchStatus ? 'up' : 'down'" />
+              </a>
             </span>
           </a-col>
         </a-row>
       </a-form>
-    </div> -->
+    </div>
+
     <!-- 操作按钮区域 -->
     <div class="table-operator">
       <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
+      <!-- <a-button type="primary" icon="download" @click="handleExportXls">下载课程模版</a-button>
+      <a-upload
+        name="file"
+        :showUploadList="false"
+        :multiple="false"
+        :action="importExcelUrl"
+        @change="handleImportExcel"
+      >
+        <a-button type="primary" icon="import">导入</a-button>
+      </a-upload>-->
       <a-dropdown v-if="selectedRowKeys.length > 0">
         <a-menu slot="overlay">
           <a-menu-item key="1" @click="batchDel">
-            <a-icon type="delete"/>删除
+            <a-icon type="delete" />删除
           </a-menu-item>
         </a-menu>
         <a-button style="margin-left: 8px">
           批量操作
-          <a-icon type="down"/>
+          <a-icon type="down" />
         </a-button>
       </a-dropdown>
     </div>
@@ -60,13 +75,11 @@
         @change="handleTableChange"
       >
         <span slot="action" slot-scope="text, record">
-          <a @click="handleEdit(record)">编辑</a>
-
-          <a-divider type="vertical"/>
+          <a @click="down(record.excelAddress)">下载</a>
           <a-dropdown>
             <a class="ant-dropdown-link">
               更多
-              <a-icon type="down"/>
+              <a-icon type="down" />
             </a>
             <a-menu slot="overlay">
               <a-menu-item>
@@ -82,23 +95,24 @@
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
-    <xtxi-modal ref="modalForm" @ok="modalFormOk"></xtxi-modal>
+    <hdExcel-modal ref="modalForm" @ok="modalFormOk"></hdExcel-modal>
   </a-card>
 </template>
 
 <script>
-import XtxiModal from './modules/XtxiModal'
+import HdExcelModal from './modules/HdExcelModal'
 import { JeecgListMixin } from '@/mixins/JeecgListMixin'
+import { httpAction } from '@/api/manage'
 
 export default {
-  name: 'XtxiList',
+  name: 'HdExcelList',
   mixins: [JeecgListMixin],
   components: {
-    XtxiModal,
+    HdExcelModal
   },
   data() {
     return {
-      description: '系统消息管理管理页面',
+      description: 'Excel模版管理管理页面',
       // 表头
       columns: [
         {
@@ -112,19 +126,14 @@ export default {
           }
         },
         {
-          title: '系统推送时间',
+          title: '年级',
           align: 'center',
-          dataIndex: 'psTime'
+          dataIndex: 'flName'
         },
         {
-          title: '消息标题',
+          title: '模版路径',
           align: 'center',
-          dataIndex: 'title'
-        },
-        {
-          title: '消息简介',
-          align: 'center',
-          dataIndex: 'introduce'
+          dataIndex: 'excelAddress'
         },
         {
           title: '操作',
@@ -134,11 +143,12 @@ export default {
         }
       ],
       url: {
-        list: '/xtxi/xtxi/list',
-        delete: '/xtxi/xtxi/delete',
-        deleteBatch: '/xtxi/xtxi/deleteBatch',
-        exportXlsUrl: 'xtxi/xtxi/exportXls',
-        importExcelUrl: 'xtxi/xtxi/importExcel'
+        list: '/hdExcel/hdExcel/list',
+        delete: '/hdExcel/hdExcel/delete',
+        deleteBatch: '/hdExcel/hdExcel/deleteBatch',
+        exportXlsUrl: 'hdExcel/hdExcel/exportXls',
+        importExcelUrl: 'hdExcel/hdExcel/importExcel',
+        downExcel: '/front/parent/vipCenter/downExcel'
       }
     }
   },
@@ -148,6 +158,16 @@ export default {
     }
   },
   methods: {
+    down(path){
+      /* let formData = {
+        excelAddress: path
+      }
+      
+      httpAction(this.url.downExcel, formData, 'post') */
+
+      window.location.href =  window._CONFIG['img']+this.url.downExcel+"?path="+path
+     
+    }
   }
 }
 </script>

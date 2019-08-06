@@ -2,11 +2,7 @@
   <a-row :gutter="10">
     <a-col :md="8" :sm="24">
       <a-card :bordered="false">
-        <a-tree
-          :treeData="treeData"
-          defaultExpandAll
-          @select="onSelect"
-        >
+        <a-tree :treeData="treeData" defaultExpandAll @select="onSelect">
           <template slot="custom"></template>
         </a-tree>
       </a-card>
@@ -54,17 +50,75 @@
           >批量删除</a-button>
         </div>
 
-        <a-modal title="添加描述" v-model="msvisible" @ok="handleOk1(1)">
+        <a-modal title="添加详情" v-model="msvisible" @ok="handleOk1()">
           <a-form>
-            <a-form-item label="描述名称" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-              <a-input placeholder="请输入描述名称" v-model="msName"/>
+            <a-form-item label="提醒时间" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <!-- <a-input format="HH:mm" v-model="mqTime" /> -->
+              <a-input
+                style=" width: 100px; text-align: center"
+                placeholder="小时(两位数)"
+                v-model="start"
+              />
+              <a-input
+                style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff"
+                placeholder=":"
+                disabled
+              />
+              <a-input
+                style="width: 100px; text-align: center; border-left: 0"
+                placeholder="分钟(两位数)"
+                v-model="end"
+              />
+            </a-form-item>
+            <a-form-item label="项目" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <a-input placeholder="项目" v-model="mqKemu" />
+            </a-form-item>
+            <a-form-item label="提醒内容" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <a-textarea placeholder="请输入提醒内容" :rows="4" v-model="mqContent" />
+            </a-form-item>
+            <a-form-item label="提醒类型" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <a-select placeholder="请选择提醒类型" @change="handleChange">
+                <a-select-option :value="0">静音</a-select-option>
+                <a-select-option :value="1">响铃</a-select-option>
+                <a-select-option :value="2">震动</a-select-option>
+                <a-select-option :value="3">响铃与震动</a-select-option>
+              </a-select>
             </a-form-item>
           </a-form>
         </a-modal>
-        <a-modal title="修改描述" v-model="msvisible1" @ok="handleOk1(2)">
+        <a-modal title="修改详情" v-model="msvisible1" @ok="handleOk2()">
           <a-form>
-            <a-form-item label="描述名称" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-              <a-input placeholder="请输入描述名称" v-model="msName"/>
+            <a-form-item label="提醒时间" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <!-- <a-input format="HH:mm" v-model="mqTime" /> -->
+              <a-input
+                style=" width: 100px; text-align: center"
+                placeholder="小时(两位数)"
+                v-model="start"
+              />
+              <a-input
+                style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff"
+                placeholder=":"
+                disabled
+              />
+              <a-input
+                style="width: 100px; text-align: center; border-left: 0"
+                placeholder="分钟(两位数)"
+                v-model="end"
+              />
+            </a-form-item>
+            <a-form-item label="项目" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <a-input placeholder="项目" v-model="mqKemu" />
+            </a-form-item>
+            <a-form-item label="提醒内容" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <a-textarea placeholder="请输入提醒内容" :rows="4" v-model="mqContent" />
+            </a-form-item>
+            <a-form-item label="提醒类型" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+              <a-select placeholder="请选择提醒类型" @change="handleChange" :defaultValue="txTypeText">
+                <a-select-option :value="0">静音</a-select-option>
+                <a-select-option :value="1">响铃</a-select-option>
+                <a-select-option :value="2">震动</a-select-option>
+                <a-select-option :value="3">响铃与震动</a-select-option>
+              </a-select>
             </a-form-item>
           </a-form>
         </a-modal>
@@ -91,12 +145,11 @@
           >
             <span slot="action" slot-scope="text, record">
               <a @click="msedit(record)">编辑</a>
-              <a-divider type="vertical"/>
+              <a-divider type="vertical" />
               <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
                 <a>删除</a>
               </a-popconfirm>
             </span>
-  
           </a-table>
         </div>
         <!-- table区域-end -->
@@ -109,7 +162,6 @@
 </template>
 
 <script>
-
 import MsmModal from './modules/MsmModal'
 import { JeecgListMixin } from '@/mixins/JeecgListMixin'
 import { getAction } from '@/api/manage'
@@ -149,7 +201,7 @@ export default {
       fltext: '',
       selectedKeys: '',
       msvisible: false,
-      msvisible1:false,
+      msvisible1: false,
       // 表头
       columns: [
         {
@@ -213,7 +265,7 @@ export default {
             })
           })
           this.treeData[0].children = data
-          this.selectedKeys =  data[0].key
+          this.selectedKeys = data[0].key
           this.queryParam.flId = data[0].key
           this.searchQuery()
         } else {
@@ -240,7 +292,7 @@ export default {
     msedit(record) {
       this.id = record.id
       let key = this.selectedKeys
-        //编辑字典数据
+      //编辑字典数据
       this.msvisible1 = true
       this.msName = record.msName
     },
@@ -249,26 +301,26 @@ export default {
       let id = this.id
       const that = this
       that.confirmLoading = true
-      let httpurl;
-      let method;
-      let data;
-      if(num == "1"){
+      let httpurl
+      let method
+      let data
+      if (num == '1') {
         httpurl = this.url.addMs //添加详情
-        method = "post"
+        method = 'post'
         data = {
           flId: this.selectedKeys,
           msName: msName
         }
-      }else if(num == "2"){
+      } else if (num == '2') {
         httpurl = this.url.editMs //添加详情
-        method = "put"
+        method = 'put'
         data = {
           flId: this.selectedKeys,
           msName: msName,
-          id:id
+          id: id
         }
       }
-       
+
       let formData = Object.assign(data)
       //时间格式化
 
