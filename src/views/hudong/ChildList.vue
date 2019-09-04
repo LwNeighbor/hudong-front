@@ -39,9 +39,9 @@
         </div>
 
         <!-- 操作按钮区域 -->
-        <div class="table-operator">
+        <!-- <div class="table-operator">
           <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
-        </div>
+        </div>-->
 
         <!-- table区域-begin -->
         <div>
@@ -85,12 +85,12 @@
                 :multiple="false"
                 :action="importExcelUrl"
                 @change="handleImportExcel"
-                :data = "{childid: record.id}"
+                :data="{childid: record.id}"
               >
                 <a type="primary" icon="import">导入课表</a>
               </a-upload>
               <a-divider type="vertical" />
-              <a @click="handleEdit(record)">编辑</a>
+              <!--  <a @click="handleEdit(record)">编辑</a> -->
 
               <a-divider type="vertical" />
               <a-dropdown>
@@ -165,13 +165,7 @@ export default {
           title: '孩子姓名',
           align: 'center',
           dataIndex: 'cdName'
-        } /* 
-        {
-          title: '孩子生日',
-          align: 'center',
-          dataIndex: 'cdBirthday'
         },
-         */,
         {
           title: '孩子手机号',
           align: 'center',
@@ -181,6 +175,11 @@ export default {
           title: '年级',
           align: 'center',
           dataIndex: 'flName'
+        },
+        {
+          title: '注册时间',
+          align: 'center',
+          dataIndex: 'createTime'
         },
         {
           title: '操作',
@@ -197,7 +196,7 @@ export default {
         msListUrl: '/msfenlei/msFenLi/msListUrl', //下拉选择模版
         updateChild: '/child/child/saveMsChild',
         parentList: '/parent/parent/valueList',
-        importExcelUrl: '/front/parent/vipCenter/exportKc'     //导入孩子的课程表
+        importExcelUrl: '/front/parent/vipCenter/exportKc' //导入孩子的课程表
       }
     }
   },

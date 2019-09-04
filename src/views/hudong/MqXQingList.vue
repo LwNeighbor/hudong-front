@@ -61,13 +61,14 @@
         <!-- 操作按钮区域 -->
         <div class="table-operator">
           <a-button @click="msadd()" type="primary" icon="plus">新增</a-button>
-          <!-- <a-button type="primary" icon="download" @click="handleExportXls">导出模版</a-button> -->
+          <!--  <a-button type="primary" icon="download" @click="handleExportXls">导出模版</a-button> -->
           <a-upload
             name="file"
             :showUploadList="false"
             :multiple="false"
             :action="importExcelUrl"
             @change="handleImportExcel"
+            :headers="headers"
             :beforeUpload="beforeUpload"
           >
             <a-button type="primary" icon="import">导入</a-button>
@@ -189,6 +190,7 @@ export default {
       mqKemu: '',
       mqContent: '',
       flId: '',
+      headers:{},
       txType: '',
       registerDay: '',
       txTypeText: '',
@@ -202,7 +204,7 @@ export default {
         delete: '/mqx/mqXQing/delete',
         deleteBatch: '/mqx/mqXQing/deleteBatch',
         exportXlsUrl: 'mqx/mqXQing/exportXls',
-        importExcelUrl: 'mqx/mqXQing/importExcel',
+        importExcelUrl: '/front/parent/vipCenter/importExcel',
         addMq: '/mqx/mqXQing/add',
         editMq: '/mqx/mqXQing/edit',
         deleteMq: '/mqx/mqXQing/delete',
@@ -396,15 +398,6 @@ export default {
     onChange(value) {
       this.mqKemu = value[0]
     },
-    /* 导出 */
-    handleExportXls() {
-      let quparam = this.getQueryParams()
-      delete quparam.flId
-
-      let paramsStr = encodeURI(JSON.stringify(quparam))
-      let url = `${window._CONFIG['domianURL']}/${this.url.exportXlsUrl}?paramsStr=${paramsStr}`
-      window.location.href = url
-    },
     /* 导入 */
     handleImportExcel(info) {
       if (info.file.status !== 'uploading') {
@@ -418,8 +411,10 @@ export default {
       }
     },
     beforeUpload(file) {
-      console.log(11111)
       let key = this.selectedKeys
+      this.headers = {
+        fiId: this.selectedKeys
+      }
       if (key.length > 0) {
         //编辑字典数据
         //this.msvisible = true
@@ -430,7 +425,7 @@ export default {
       }
     },
     importExcelUrl: function() {
-      return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}/${this.selectedKeys}`
+      return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}`
     }
   }
 }

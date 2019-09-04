@@ -10,17 +10,13 @@
     <a-spin :spinning="confirmLoading">
       <a-form :form="form">
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="系统推送时间">
-         <a-date-picker
-            format="YYYY-MM-DD HH:mm"
-            showTime
-            @change="onChange"
-          />
+          <a-date-picker format="YYYY-MM-DD HH:mm" showTime @change="onChange" />
         </a-form-item>
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="消息标题">
-          <a-input placeholder="请输入消息标题" v-decorator="['title', {}]"/>
+          <a-input placeholder="请输入消息标题" v-decorator="['title', {}]" />
         </a-form-item>
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="消息简介">
-          <a-input placeholder="请输入消息简介" v-decorator="['introduce', {}]"/>
+          <a-input placeholder="请输入消息简介" v-decorator="['introduce', {}]" />
         </a-form-item>
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="消息内容">
           <editor v-model="content" :init="init" :disabled="disabled" @onClick="onClick"></editor>
@@ -55,7 +51,7 @@ import 'tinymce/plugins/contextmenu'
 import 'tinymce/plugins/wordcount'
 import 'tinymce/plugins/colorpicker'
 import 'tinymce/plugins/textcolor'
-import { constants } from 'fs';
+import { constants } from 'fs'
 
 export default {
   components: {
@@ -72,12 +68,12 @@ export default {
     },
     plugins: {
       type: [String, Array],
-      default: 'lists image media table textcolor wordcount contextmenu'
+      default: 'lists image textcolor wordcount contextmenu'
     },
     toolbar: {
       type: [String, Array],
       default:
-        'undo redo |  formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | lists image media table | removeformat'
+        ' bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image'
     }
   },
   name: 'XtxiModal',
@@ -118,9 +114,17 @@ export default {
         toolbar: this.toolbar,
         branding: false,
         menubar: false,
-        images_upload_handler: (blobInfo, success) => {
-          const img = 'data:image/jpeg;base64,' + blobInfo.base64()
-          success(img)
+        images_upload_handler: function(blobInfo, success, failure) {
+          let httpurl = window._CONFIG['domianURL'] + '/front/parent/vipCenter/uploadTinyImg'
+          let formData = new FormData()
+          formData.append('file', blobInfo.blob())
+          httpAction(httpurl, formData, 'post').then(res => {
+            if (res.success) {
+              success(window._CONFIG['domianURL'] + '/' + res.result.url)
+            } else {
+              this.$message.warning(res.message)
+            }
+          })
         }
       },
       content: this.value
@@ -146,7 +150,7 @@ export default {
       this.psTime = dateString
     },
     onClick(e) {
-      this.$emit('onClick', e, tinymce) 
+      this.$emit('onClick', e, tinymce)
     },
     add() {
       this.edit({})

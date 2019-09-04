@@ -1,14 +1,27 @@
 <template>
   <a-card :bordered="false">
     <!-- 查询区域 -->
-    <!-- <div class="table-page-search-wrapper">
+    <div class="table-page-search-wrapper">
       <a-form layout="inline">
         <a-row :gutter="24">
           <a-col :md="6" :sm="8">
-            <a-form-item label="消息标题">
-              <a-input placeholder="请输入消息标题" v-model="queryParam.title"></a-input>
+            <a-form-item label="注册天数">
+              <a-input placeholder="请输入注册天数" v-model="queryParam.psTime"></a-input>
             </a-form-item>
           </a-col>
+
+          <a-col :md="6" :sm="8">
+            <a-form-item label="消息回复类型">
+              <a-input placeholder="请输入消息回复类型" v-model="queryParam.introduce"></a-input>
+            </a-form-item>
+          </a-col>
+
+           <a-col :md="6" :sm="8">
+            <a-form-item label="年级">
+              <a-input placeholder="请输入年级" v-model="queryParam.gradeName"></a-input>
+            </a-form-item>
+          </a-col>
+
           <a-col :md="6" :sm="8">
             <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
               <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
@@ -22,11 +35,20 @@
           </a-col>
         </a-row>
       </a-form>
-    </div> -->
+    </div>
 
     <!-- 操作按钮区域 -->
     <div class="table-operator">
       <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
+      <a-upload
+        name="file" 
+        :showUploadList="false"
+        :multiple="false"
+        :action="importExcelUrl"
+        @change="handleImportExcel"
+      >
+        <a-button type="primary" icon="import">导入</a-button>
+      </a-upload>
       <a-dropdown v-if="selectedRowKeys.length > 0">
         <a-menu slot="overlay">
           <a-menu-item key="1" @click="batchDel">
@@ -128,7 +150,7 @@ export default {
           dataIndex: 'kemu'
         },
         {
-          title: '消息内容',
+          title: '消息回复类型',
           align: 'center',
           dataIndex: 'introduce'
         },
@@ -143,6 +165,7 @@ export default {
         list: '/xthf/xthf/list',
         delete: '/xthf/xthf/delete',
         deleteBatch: '/xthf/xthf/deleteBatch',
+        importExcelUrl: '/front/parent/vipCenter/importExcelXthf',
       }
     }
   },
@@ -151,8 +174,7 @@ export default {
       return `${window._CONFIG['domianURL']}/${this.url.importExcelUrl}`
     }
   },
-  methods: {
-  }
+  methods: {}
 }
 </script>
 <style lang="less" scoped>

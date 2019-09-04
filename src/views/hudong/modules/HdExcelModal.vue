@@ -10,8 +10,12 @@
   >
     <a-spin :spinning="confirmLoading">
       <a-form :form="form">
-        <a-form-item label="年级" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <!-- <a-form-item label="年级" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
           <a-cascader :options="options" @change="onChange" />
+        </a-form-item> -->
+        <a-form-item label="模版备注" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+          <!-- <a-cascader :options="options" @change="onChange" /> -->
+          <a-input placeholder="模版备注" :v-model="remark" v-decorator="['remark', {}]" />
         </a-form-item>
 
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="模版路径">
@@ -47,7 +51,8 @@ export default {
       visible: false,
       model: {},
       headers: {},
-      options: [],
+      /* options: [], */
+      remark:'',
       path: '',
       flId: '',
       flName: '',
@@ -83,7 +88,7 @@ export default {
       return this.url.fileUpload
     }
   },
-  mounted() {
+  /* mounted() {
     let httpUrl = this.url.fllist
     httpAction(httpUrl, '', 'get').then(res => {
       if (res.success) {
@@ -98,7 +103,7 @@ export default {
         this.options = data
       }
     })
-  },
+  }, */
   methods: {
     add() {
       this.edit({})
@@ -133,8 +138,9 @@ export default {
           }
 
           this.model.excelAddress = this.path
-          this.model.flId = this.flId
-          this.model.flName = this.flName
+          /* this.model.flId = this.flId
+          this.model.flName = this.flName */
+          this.model.remark = this.remark
 
           let formData = Object.assign(this.model, values)
           //时间格式化
@@ -168,10 +174,10 @@ export default {
         this.$message.error(`${info.file.name} file upload failed.`)
       }
     },
-    onChange(value,selectedOptions) {
+    /* onChange(value,selectedOptions) {
       this.flId = selectedOptions[0].value
       this.flName = selectedOptions[0].label
-    }
+    } */
   }
 }
 </script>

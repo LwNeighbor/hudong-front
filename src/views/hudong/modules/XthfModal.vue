@@ -23,8 +23,50 @@
             <a-select-option value="YY">YY</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="反馈内容">
+        <!-- <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="反馈内容">
           <editor v-model="content" :init="init" :disabled="disabled" @onClick="onClick"></editor>
+        </a-form-item>-->
+        <a-form-item label="内容类型" :labelCol="labelCol" :wrapperCol="wrapperCol">
+          <a-radio-group @change="onChangeMenuType" :defaultValue="0" v-model="type">
+            <a-radio :value="0">文字</a-radio>
+            <a-radio :value="1">图片</a-radio>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="消息内容"
+          v-show="localMenuType == 0"
+        >
+          <a-textarea placeholder="请输入消息内容" :rows="4" v-decorator="['content', {}]" />
+        </a-form-item>
+        <a-form-item
+          label="图片"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          v-show="localMenuType == 1"
+        >
+          <a-upload
+            listType="picture-card"
+            class="avatar-uploader"
+            :showUploadList="false"
+            :action="uploadAction"
+            :data="{'isup':1}"
+            :headers="headers"
+            :beforeUpload="beforeUpload"
+            @change="handleChange1"
+          >
+            <img
+              v-if="content"
+              :src="getAvatarView()"
+              alt="头像"
+              style="height:104px;max-width:300px"
+            />
+            <div v-else>
+              <a-icon :type="uploadLoading ? 'loading' : 'plus'" />
+              <div class="ant-upload-text">上传</div>
+            </div>
+          </a-upload>
         </a-form-item>
       </a-form>
     </a-spin>
@@ -71,25 +113,29 @@ export default {
     },
     plugins: {
       type: [String, Array],
-      default: 'lists image media table textcolor wordcount contextmenu'
+      default: 'lists image textcolor wordcount contextmenu'
     },
     toolbar: {
       type: [String, Array],
       default:
-        'undo redo |  formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | lists image media table | removeformat'
+        ' bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image'
     }
   },
   name: 'XthfModal',
   data() {
     return {
       title: '操作',
+      uploadLoading: false,
       visible: false,
       model: {},
       options: [],
       flId: '-1',
       xuekeId: '-1',
-      type: '-1',
+      zType: '-1',
       content: '',
+      localMenuType: '0',
+      type: 0,
+      headers: {},
       disableSubmit: false,
       labelCol: {
         xs: { span: 24 },
@@ -106,7 +152,9 @@ export default {
       url: {
         add: '/xthf/xthf/add',
         edit: '/xthf/xthf/edit',
-        nflist: '/xthf/xthf/nflist'
+        nflist: '/xthf/xthf/nflist',
+        imgerver: window._CONFIG['domianURL'] + '/sys/common/view',
+        fileUpload: window._CONFIG['domianURL'] + '/sys/common/uploadAll'
       },
       //初始化配置
       init: {
@@ -118,29 +166,64 @@ export default {
         toolbar: this.toolbar,
         branding: false,
         menubar: false,
-        images_upload_handler: (blobInfo, success) => {
-          const img = 'data:image/jpeg;base64,' + blobInfo.base64()
-          success(img)
+        images_upload_handler: function(blobInfo, success, failure) {
+          let httpurl = window._CONFIG['domianURL'] + '/front/parent/vipCenter/uploadTinyImg'
+          let formData = new FormData()
+          formData.append('file', blobInfo.blob())
+          httpAction(httpurl, formData, 'post').then(res => {
+            if (res.success) {
+              success(window._CONFIG['domianURL'] + '/' + res.result.url)
+            } else {
+              this.$message.warning(res.message)
+            }
+          })
         }
       },
-      content: this.value
     }
   },
   created() {
     this.getOptions()
+    const token = Vue.ls.get(ACCESS_TOKEN)
+    this.headers = { 'X-Access-Token': token }
   },
   mounted() {
     tinymce.init({})
   },
-  watch: {
-    value(newValue) {
-      this.content = newValue
-    },
-    content(newValue) {
-      this.$emit('input', newValue)
+  computed: {
+    uploadAction: function() {
+      return this.url.fileUpload
     }
   },
   methods: {
+    onChangeMenuType(e) {
+      this.localMenuType = e.target.value
+    },
+    beforeUpload: function(file) {
+      var fileType = file.type
+      if (fileType.indexOf('image') < 0) {
+        this.$message.warning('请上传图片')
+        return false
+      }
+      //TODO 验证文件大小
+    },
+    getAvatarView() {
+      return window._CONFIG['domianURL'] + "/" +this.content
+    },
+    handleChange1(info) {
+      if (info.file.status === 'uploading') {
+        this.uploadLoading = true
+        return
+      }
+      if (info.file.status === 'done') {
+        var response = info.file.response
+        this.uploadLoading = false
+        if (response.success) {
+          this.content = response.message
+        } else {
+          this.$message.warning(response.message)
+        }
+      }
+    },
     getOptions() {
       let httpUrl = this.url.nflist
       httpAction(httpUrl, '', 'get').then(res => {
@@ -153,13 +236,16 @@ export default {
       this.edit({})
     },
     edit(record) {
-      this.type = record.introduce
-      if (JSON.stringify(record) == '{}') {
-        this.content = ''
+    if (JSON.stringify(record) == '{}') {
+        this.type = 0
+        this.localMenuType = 0
       } else {
-        this.content = record.content
+        this.type = parseInt(record.type)
+        this.localMenuType = parseInt(record.type)
+        this.zType = record.introduce
       }
-      this.type = record.introduce
+      this.content = record.content
+      
       this.flId = '-1'
       this.xuekeId = '-1'
       this.form.resetFields()
@@ -200,12 +286,15 @@ export default {
             method = 'put'
           }
 
-          this.model.introduce = this.type
+          this.model.introduce = this.zType
           this.model.grade = this.flId
           this.model.kemu = this.xuekeId
-          this.model.content = this.content
 
           let formData = Object.assign(this.model, values)
+          if (this.localMenuType == '1') {
+            formData.content = this.content
+          }
+          formData.type = this.localMenuType.toString()
           //时间格式化
           httpAction(httpurl, formData, method)
             .then(res => {
@@ -217,6 +306,7 @@ export default {
               }
             })
             .finally(() => {
+              this.content = ''
               that.confirmLoading = false
               that.close()
             })
@@ -227,7 +317,7 @@ export default {
       this.close()
     },
     handleChange(value) {
-      this.type = value
+      this.zType = value
     },
     onClick(e) {
       this.$emit('onClick', e, tinymce)

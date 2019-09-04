@@ -17,6 +17,12 @@
           </a-col>
 
           <a-col :md="6" :sm="8">
+            <a-form-item label="星期">
+              <a-input placeholder="请输入星期数" v-model="queryParam.weekday"></a-input>
+            </a-form-item>
+          </a-col>
+
+          <a-col :md="6" :sm="8">
             <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
               <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
               <a-button

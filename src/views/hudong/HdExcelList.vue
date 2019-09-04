@@ -126,9 +126,9 @@ export default {
           }
         },
         {
-          title: '年级',
+          title: '模版备注',
           align: 'center',
-          dataIndex: 'flName'
+          dataIndex: 'remark'
         },
         {
           title: '模版路径',

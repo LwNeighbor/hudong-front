@@ -9,6 +9,11 @@
               <a-input placeholder="请输入学科名称" v-model="queryParam.xkName"></a-input>
             </a-form-item>
           </a-col>
+          <a-col :md="6" :sm="8">
+            <a-form-item label="年级名称">
+              <a-input placeholder="请输入年级名称" v-model="queryParam.flName"></a-input>
+            </a-form-item>
+          </a-col>
 
           <a-col :md="6" :sm="8">
             <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
